@@ -173,7 +173,7 @@ class ImageProcessor:
         self.master.grid_rowconfigure(1, weight=1)
         
     def load_image(self):
-        self.image_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg *.jpeg *.png *.bmp")])
+        self.image_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg *.jpeg *.png *.bmp *.tiff")])
         if self.image_path:
             self.original_image = cv2.imread(self.image_path)
             self.original_image = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
