@@ -42,7 +42,7 @@ class ImageProcessor:
         blur_frame = ttk.LabelFrame(function_frame, text="Blur", padding=5)
         blur_frame.pack(fill="x", padx=5, pady=5)
         self.blur_type_var = tk.StringVar(value="Gaussian")
-        blur_types = ["Gaussian", "Median", "Average"]
+        blur_types = ["Gaussian", "Median", "Average", "fastNlMeansDenoisingColored"]
         blur_type_menu = ttk.Combobox(blur_frame, textvariable=self.blur_type_var, values=blur_types, state="readonly")
         blur_type_menu.pack(side="left", padx=5)
         self.blur_level_var = tk.IntVar(value=3)
@@ -234,6 +234,8 @@ class ImageProcessor:
                 temp_image = cv2.medianBlur(temp_image, blur_level * 2 + 1)
             elif blur_type == "Average":
                 temp_image = cv2.blur(temp_image, (blur_level * 2 + 1, blur_level * 2 + 1))
+            elif blur_type == "fastNlMeansDenoisingColored":
+                temp_image = cv2.fastNlMeansDenoisingColored(temp_image, None, blur_level, blur_level, 7, 21)
             
             self.update_image_display(temp_image)
 
@@ -420,6 +422,7 @@ class ImageProcessor:
         if self.original_image is not None:
             self.processed_image = self.original_image.copy()
             self.temp_image = self.original_image.copy()
+
             if "blur" in self.processing_pipeline:
                 blur_params = self.processing_pipeline["blur"]
                 blur_type = blur_params["type"]
@@ -433,6 +436,10 @@ class ImageProcessor:
                 elif blur_type == "Average":
                     self.processed_image = cv2.blur(self.processed_image, (blur_level * 2 + 1, blur_level * 2 + 1))
                     self.temp_image = cv2.blur(self.temp_image, (blur_level * 2 + 1, blur_level * 2 + 1))
+                elif blur_type == "fastNlMeansDenoisingColored":
+                    self.processed_image = cv2.fastNlMeansDenoisingColored(self.processed_image, None, blur_level, blur_level, 7, 21)
+                    self.temp_image = cv2.fastNlMeansDenoisingColored(self.temp_image, None, blur_level, blur_level, 7, 21)
+            
             if "contour" in self.processing_pipeline:
                 contour_params = self.processing_pipeline["contour"]
                 contour_type = contour_params["type"]
@@ -461,6 +468,8 @@ class ImageProcessor:
                     gray = self.processed_image
                 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
                 edges = cv2.Canny(blurred, contour_detect_level, contour_detect_level * 2)
+
+
                 contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 cv2.drawContours(self.processed_image, contours, -1, (0, 255, 0), 2)
 
